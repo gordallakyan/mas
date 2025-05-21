@@ -1,7 +1,3 @@
-package dynamic;
-
-import util.ObjectPlus;
-
 public abstract class Osoba extends ObjectPlus {
     private String imie;
     private String nazwisko;

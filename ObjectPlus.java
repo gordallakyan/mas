@@ -1,7 +1,3 @@
-package util;
-
-import Kompozycja_BAG_OgWłasne.Produkt;
-
 import java.io.*;
 import java.util.*;
 

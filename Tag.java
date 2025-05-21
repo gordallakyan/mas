@@ -1,5 +1,3 @@
-package Kompozycja_BAG_OgWłasne;
-
 import java.io.Serializable;
 
 public class Tag implements Serializable {

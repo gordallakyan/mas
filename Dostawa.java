@@ -1,50 +1,87 @@
-package zAtrybutem_Ograniczenie;
-
-import util.ObjectPlus;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Dostawa extends ObjectPlus {
     private String godzinaDostawy;
-    private List<Zamowienie> klientList = new ArrayList<>();
+    private final List<Składnik> składniki = new ArrayList<>(); // Asocjacja wiele–do–wielu między Dostawa a Składnik
+    private final List<Zamowienie> zamówienia = new ArrayList<>(); // Asocjacja jeden–do–wielu między Dostawa a Zamówienie
 
     public Dostawa(String godzinaDostawy) {
+        if (godzinaDostawy == null || godzinaDostawy.isBlank()) {
+            throw new IllegalArgumentException("Godzina dostawy nie może być pusta");
+        }
         this.godzinaDostawy = godzinaDostawy;
-    }
-    public void addKlient(Klient klient){
-        new Zamowienie(klient,this);
         addExtent();
     }
-    public void addZamowienie(Zamowienie zamowienie){
-     if (!klientList.contains(zamowienie) && zamowienie != null) {
-         klientList.add(zamowienie);
-     }
+
+    public String getGodzinaDostawy() {
+        return godzinaDostawy;
     }
-    public void removeZamowienie(Zamowienie zamowienie){
-        if (klientList.remove(zamowienie)){
-            klientList.remove(this);
+
+    public List<Składnik> getSkładniki() {
+        return Collections.unmodifiableList(składniki);
+    }
+
+    public void addSkładnik(Składnik s) { // Asocjacja wiele–do–wielu między Dostawa a Składnik
+        if (s == null) {
+            throw new IllegalArgumentException("Składnik nie może być null");
+        }
+        if (!składniki.contains(s)) {
+            składniki.add(s);
+            s.addDostawa(this);
+        }
+    }
+
+    public void removeSkładnik(Składnik s) { // Asocjacja wiele–do–wielu między Dostawa a Składnik
+        if (s == null) {
+            return;
+        }
+        if (składniki.remove(s)) {
+            s.removeDostawa(this);
+        }
+    }
+
+    public List<Zamowienie> getZamówienia() {
+        return Collections.unmodifiableList(zamówienia);
+    }
+
+    public void addZamowienie(Zamowienie z) { // Asocjacja jeden–do–wielu między Dostawa a Zamówienie
+        if (z == null) {
+            throw new IllegalArgumentException("Zamówienie nie może być null");
+        }
+        if (!zamówienia.contains(z)) {
+            zamówienia.add(z);
+            z.setDostawa(this);
         }
     }
 
-    public void setGodzinaDostawy(String godzinaDostawy) { //Ograniczenie Atrybutu
-        if (godzinaDostawy == null || godzinaDostawy.isBlank()) {
-            throw new IllegalArgumentException("godzinaDostawy nie może być pusta");
+    public void removeZamowienie(Zamowienie z) { // Asocjacja jeden–do–wielu między Dostawa a Zamówienie
+        if (z == null) {
+            return;
         }
-        if (!godzinaDostawy.matches("\\d+")) {
-            throw new IllegalArgumentException("godzinaDostawy nie może zawierać liter i musi być liczbą");
+        if (zamówienia.remove(z)) {
+            z.setDostawa(null);
         }
-        int godzina;
-        try {
-            godzina = Integer.parseInt(godzinaDostawy);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("godzinaDostawy musi być liczbą całkowitą");
-        }
-        if (godzina < 8 || godzina > 16) {
-            throw new IllegalArgumentException("godzinaDostawy musi być w zakresie 8–16");
-        }
-        this.godzinaDostawy = godzinaDostawy;
     }
 
+    @Override
+    public void removeFromExtent() {
+        for (Składnik s : new ArrayList<>(składniki)) {
+            removeSkładnik(s);
+        }
+        for (Zamowienie z : new ArrayList<>(zamówienia)) {
+            removeZamowienie(z);
+        }
+        super.removeFromExtent();
+    }
 
+    @Override
+    public String toString() {
+        return "Dostawa{" +
+                "godzinaDostawy='" + godzinaDostawy + '\'' +
+                ", składniki=" + składniki.size() +
+                ", zamówienia=" + zamówienia.size() +
+                '}';
+    }
 }

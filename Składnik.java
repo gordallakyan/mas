@@ -1,33 +1,20 @@
-package Kompozycja_BAG_OgWłasne;
-
 import java.io.Serializable;
-
-import util.ObjectPlus;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Składnik extends ObjectPlus implements Serializable {
     private int ilość;
     private String krajPochodzenia;
     private String nazwa;
-    Produkt produkt;
-
-
+    private Produkt produkt; // Kompozycja między Produktem a Składnikiem
+    private final List<Dostawa> dostawy = new ArrayList<>(); // Asocjacja wiele–do–wielu między Składnik a Dostawa
 
     public Składnik(int ilość, String krajPochodzenia, String nazwa) {
         setIlość(ilość);
         setKrajPochodzenia(krajPochodzenia);
         setNazwa(nazwa);
-
-    }
-
-
-    @Override
-    public void removeFromExtent(){ //Kompozycja między Produktem a składnikiem
-        if (produkt != null){
-            Produkt p = produkt;
-            produkt = null;
-            p.usunSkladnik(this);
-        }
-        super.removeFromExtent();
+        addExtent();
     }
 
     public int getIlość() {
@@ -35,8 +22,8 @@ public class Składnik extends ObjectPlus implements Serializable {
     }
 
     public void setIlość(int ilość) {
-        if (ilość > Produkt.getMaxLiczbaSkładników() || ilość < 0){
-            throw new IllegalArgumentException("Ilość składników jest nie poprawna");
+        if (ilość < 0 || ilość > Produkt.getMaxLiczbaSkładników()) {
+            throw new IllegalArgumentException("Ilość składników jest niepoprawna");
         }
         this.ilość = ilość;
     }
@@ -46,7 +33,7 @@ public class Składnik extends ObjectPlus implements Serializable {
     }
 
     public void setKrajPochodzenia(String krajPochodzenia) {
-        if (krajPochodzenia == null || krajPochodzenia.isBlank()){
+        if (krajPochodzenia == null || krajPochodzenia.isBlank()) {
             throw new IllegalArgumentException("Niepoprawny kraj pochodzenia");
         }
         this.krajPochodzenia = krajPochodzenia;
@@ -57,14 +44,71 @@ public class Składnik extends ObjectPlus implements Serializable {
     }
 
     public void setNazwa(String nazwa) {
-        if (nazwa == null || nazwa.isBlank()){
-            throw new IllegalArgumentException("Kompozycja.Składnik musi mieć nazwę");
+        if (nazwa == null || nazwa.isBlank()) {
+            throw new IllegalArgumentException("Składnik musi mieć nazwę");
         }
         this.nazwa = nazwa;
     }
 
-    void setProdukt(Produkt p) {
-        this.produkt = p;
+    public Produkt getProdukt() {
+        return produkt;
     }
 
+
+    public void usunProdukt() {
+        if (produkt != null) {
+            Produkt old = produkt;
+            produkt = null;
+            old.usunSkladnik(this);
+        }
+    }
+
+    public List<Dostawa> getDostawy() {
+        return Collections.unmodifiableList(dostawy);
+    }
+
+    /** Asocjacja wiele–do–wielu: dodaje powiązanie z Dostawą */
+    public void addDostawa(Dostawa d) {
+        if (d == null) {
+            throw new IllegalArgumentException("Dostawa nie może być null");
+        }
+        if (!dostawy.contains(d)) {
+            dostawy.add(d);
+            d.addSkładnik(this);
+        }
+    }
+
+    /** Asocjacja wiele–do–wielu: usuwa powiązanie z Dostawą */
+    public void removeDostawa(Dostawa d) {
+        if (d == null) {
+            return;
+        }
+        if (dostawy.remove(d)) {
+            d.removeSkładnik(this);
+        }
+    }
+
+    @Override
+    public void removeFromExtent() {
+        if (produkt != null) {
+            Produkt old = produkt;
+            produkt = null;
+            old.usunSkladnik(this);
+        }
+        for (Dostawa d : new ArrayList<>(dostawy)) {
+            removeDostawa(d);
+        }
+        super.removeFromExtent();
+    }
+
+    @Override
+    public String toString() {
+        return "Składnik{" +
+                "ilość=" + ilość +
+                ", krajPochodzenia='" + krajPochodzenia + '\'' +
+                ", nazwa='" + nazwa + '\'' +
+                ", dostawy=" + dostawy.size() +
+                ", produkt=" + (produkt != null ? produkt.getId() : "null") +
+                '}';
+    }
 }

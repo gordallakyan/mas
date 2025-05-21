@@ -1,7 +1,3 @@
-package zAtrybutem_Ograniczenie;
-
-import util.ObjectPlus;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +14,7 @@ public class Klient extends ObjectPlus {
         new Zamowienie(this, dostawa);
         addExtent();
     }
+
     public void addZamowienie(Zamowienie zamowienie){
         if (!dostawyList.contains(zamowienie) && zamowienie != null) {
             dostawyList.add(zamowienie);
@@ -28,5 +25,20 @@ public class Klient extends ObjectPlus {
             dostawyList.remove(this);
         }
     }
+    public void removeFromExtent(){
+        for (Zamowienie zamowienie : dostawyList){
+            zamowienie.usunPozycje();
+        }
+        dostawyList.clear();
+        removeFromExtent();
     }
+
+    @Override
+    public String toString() {
+        return "Klient{" +
+                "pesel='" + pesel + '\'' +
+                ", dostawyList=" + dostawyList.stream().map(zamowienie -> zamowienie.getDataZamowienia()).toList() +
+                '}';
+    }
+}
 

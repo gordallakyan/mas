@@ -1,7 +1,3 @@
-package zAtrybutem_Ograniczenie;
-
-import util.ObjectPlus;
-
 import java.time.LocalDate;
 
 public class Zamowienie extends ObjectPlus {
@@ -39,12 +35,24 @@ public class Zamowienie extends ObjectPlus {
     public void setDostawa(Dostawa dostawa) {
         this.dostawa = dostawa;
     }
+    public void usunPozycje(){
+        dostawa.removeZamowienie(this);
+        klient.removeZamowienie(this);
+    }
 
     public void removeFromExtent(){
         if (klient != null && dostawa != null) {
             klient.removeZamowienie(this);
             dostawa.removeZamowienie(this);
-            removeFromExtent();
+            super.removeFromExtent();
         }
+    }
+    @Override
+    public String toString() {
+        return "Zamowienie{" +
+                "dataZamowienia=" + dataZamowienia +
+                ", klient="  +
+                ", dostawa=" + dostawa +
+                '}';
     }
 }
